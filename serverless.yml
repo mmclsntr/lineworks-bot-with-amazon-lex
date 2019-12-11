@@ -1,0 +1,35 @@
+service: lineworks-lex
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+
+provider:
+  name: aws
+  runtime: python3.7
+  region: us-west-2
+  timeout: 30
+  iamManagedPolicies:
+    - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+    - 'arn:aws:iam::aws:policy/AmazonLexRunBotsOnly'
+    - 'arn:aws:iam::aws:policy/AWSLambdaExecute'
+
+functions:
+  update-token:
+    handler: lambda_function.update_token_handler
+    events:
+      - schedule: rate(12 hours)
+
+  chat-lex:
+    handler: lambda_function.chat_with_lex_handler
+    environment:
+      BOTNO: "102593"
+      LEX_BOT_NAME: "BookTrip"
+      LEX_BOT_ALIAS: "prd"
+    events:
+      - http:
+          path: lineworks/talk
+          method: post
+
+plugins:
+  - serverless-python-requirements
